@@ -12,6 +12,10 @@ from MDAnalysis.lib.distances import calc_dihedrals
 import MDAnalysis as mda
 import mdtraj
 import logging
+import nglview as nv
+import numpy as np
+from MDAnalysis import transformations
+from typing import Optional
 
 logger = logging.getLogger(__name__) 
 
@@ -232,7 +236,7 @@ def plot_overlap(lig, leg, analyser, out_file):
     overlap_dict = analyser.mbar.computeOverlap()
     #overlap = np.array(overlap_dict["matrix"])[::2,::2]
     overlap = np.array(overlap_dict["matrix"])
-    fig, ax = plt.subplots(1, 1, figsize=(6, 4), dpi=1000)
+    fig, ax = plt.subplots(1, 1, figsize=(6, 4))
     sns.heatmap(overlap, ax=ax, square=True, linewidths=.5)
     ax.set_title(f"{lig} {leg} overlap")
     fig.savefig(f"{out_file}.png", bbox_inches="tight")
@@ -252,7 +256,7 @@ def plot_overlap(lig, leg, analyser, out_file):
 #  https://github.com/choderalab/yank/blob/master/Yank/reports/notebook.py
 ##################################################################################
 
-def plot_replica_mixing(analyser, out_file):
+def plot_replica_mixing(analyser, out_file: Optional[str] = None, n_frames = None):
         """
         Generate the replica trajectory mixing plots. Show the state of each replica as a function of simulation time
         Args:
@@ -265,16 +269,22 @@ def plot_replica_mixing(analyser, out_file):
         n_replicas, n_states, n_iterations = sampled_energies.shape
 
         # Create plot
-        fig, axs = plt.subplots(nrows=n_states, ncols=1, figsize=(10, n_states))
+        fig, axs = plt.subplots(nrows=n_states, ncols=1, figsize=(10, n_states+2))
 
         # Loop through all states
         for replica_index in range(n_replicas):
             # Get axis
             ax = axs[replica_index]
             # Actually plot
-            ax.plot(state_kn[replica_index, :], 'k.')
+            if n_frames is not None:
+                ax.plot(state_kn[replica_index, :n_frames], 'k.')
+                ax.set_xlim([0, n_frames]) 
+            else:
+                ax.plot(state_kn[replica_index, :], 'k.')
+                ax.set_xlim([0, n_iterations]) 
             # Format plot
-            ax.set_xlim([0, n_iterations])
+            
+
             ax.set_ylim([0, n_states])
             ax.set_ylabel("State index")
             ax.set_title(f"Replica {replica_index}")
@@ -285,7 +295,8 @@ def plot_replica_mixing(analyser, out_file):
 
         # Format plot
         fig.set_tight_layout(True)
-        fig.savefig(out_file, dpi=1000)
+        if out_file is not None:
+            fig.savefig(out_file, dpi=1000)
 
 
 # RMSD
@@ -325,9 +336,9 @@ def extract_trajectory(topology, nc_path, nc_checkpoint_file=None, state_index=N
         Extract one frame every skip_frame (default is 1).
     keep_solvent : bool, optional
         If False, solvent molecules are ignored (default is True).
-    discard_equilibration : bool, optional
+    discard_equilibration : bool, uoptional
         If True, initial equilibration frames are discarded (see the method
-        pymbar.timeseries.detectEquilibration() for details, default is False).
+        pymbar.timeseries.detectEqilibration() for details, default is False).
     Returns
     -------
     trajectory: mdtraj.Trajectory
@@ -454,10 +465,27 @@ def extract_trajectory(topology, nc_path, nc_checkpoint_file=None, state_index=N
 
     # Save trajectory to outdir
     outdir = os.path.dirname(nc_path)
-    trajectory.save_dcd(os.path.join(outdir, f'traj_state{state_index}.dcd'))
+    trajectory.save_dcd(os.path.join(outdir, f'traj_replica{state_index}.dcd'))
+    # trajectory.save_pdb(os.path.join(outdir, f'traj_state{state_index}.pdb'), force_overwrite=True)
 
     return trajectory
 
+
+def visualise_trajectory(topology: str, trajectory: str):
+   
+    u = mda.Universe(topology=topology,coordinates=trajectory)
+    workflow = [transformations.unwrap(u.atoms)]
+    u.trajectory.add_transformations(*workflow)
+
+
+    view = nv.show_mdanalysis(u)
+
+    view.add_unitcell()
+    view.control.rotate(
+        mda.lib.transformations.quaternion_from_euler(
+            -np.pi/2, np.pi/3, np.pi/6, 'rzyz').tolist())
+    view.control.zoom(-0.3)
+    return view
 
 def plot_rmsd(pdb_file, path_nc, analyser, out_file, resname="MOL", checkpoint_name="repex_checkpoint.nc"):
     """Plot RMSD of all ligand atoms with respect to the first frame of the trajectory.
@@ -485,7 +513,7 @@ def plot_rmsd(pdb_file, path_nc, analyser, out_file, resname="MOL", checkpoint_n
         traj = extract_trajectory(topology,
                                   path_nc,
                                   checkpoint_name,
-                                  state,
+                                   state,
                                   )
 
         # Arbitrarily use first traj as reference (use first frame

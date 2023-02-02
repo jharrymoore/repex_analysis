@@ -1,0 +1,10 @@
+Metadata-Version: 2.1
+Name: repex-analysis
+Version: 0.1.0
+Classifier: Programming Language :: Python :: 3.7
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+# ani_mmml_corrections
+Scripts for carrying out mm->ml corrections with ANI. This repo provides code to extract all required output from a Perses RBFE calculation, and to submit all runs and analyses via slurm.
