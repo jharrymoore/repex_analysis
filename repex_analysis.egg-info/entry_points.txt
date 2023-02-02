@@ -1,0 +1,3 @@
+[console_scripts]
+rmsd = repex_analysis.rmsd:main
+write_batch_scripts = repex_analysis.write_batch_scripts:main

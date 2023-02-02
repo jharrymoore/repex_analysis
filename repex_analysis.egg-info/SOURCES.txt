@@ -2,7 +2,11 @@ LICENSE
 README.md
 pyproject.toml
 setup.cfg
+repex_analysis/__init__.py
+repex_analysis/rmsd.py
+repex_analysis/write_batch_scripts.py
 repex_analysis.egg-info/PKG-INFO
 repex_analysis.egg-info/SOURCES.txt
 repex_analysis.egg-info/dependency_links.txt
+repex_analysis.egg-info/entry_points.txt
 repex_analysis.egg-info/top_level.txt

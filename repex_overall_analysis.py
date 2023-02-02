@@ -1,4 +1,4 @@
-from repex_analysis import get_correction
+from repex_analysis.repex_analysis import get_correction
 from openmmtools.multistate import MultiStateSamplerAnalyzer, MultiStateReporter
 from openmmtools.openmm_torch.repex import get_atoms_from_resname
 from openmm import app

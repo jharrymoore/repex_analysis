@@ -3,7 +3,7 @@
 from openmm import app
 import MDAnalysis as mda
 import argparse
-from repex_analysis import get_dihedral
+from repex_analysis.repex_analysis import get_dihedral
 
 
 def print_dihedral(pdb_path, atom_indices=[19,17,16,14]):
