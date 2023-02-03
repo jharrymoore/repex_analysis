@@ -3,7 +3,7 @@ import sys
 
 import argparse
 
-def write_batch_scripts(direc: str, replicas: int, model_path: str, smff: str, output_dir: str, n_gpu: int = 2):
+def write_batch_scripts(direc: str, replicas: int, model_path: str, smff: str, output_dir: str, restart: bool, n_gpu: int = 2):
     complex_files = [f for f in os.listdir(os.path.join(direc, "complex"))]
     ligand_files = [f for f in os.listdir(os.path.join(direc, "ligands"))]
 
@@ -17,7 +17,7 @@ def write_batch_scripts(direc: str, replicas: int, model_path: str, smff: str, o
         gpu_bind_string += elem
     gpu_bind_string = gpu_bind_string[:-1]
 
-
+    rst = "--restart" if restart else ""
     for ligand, sys_name in zip(ligand_files, sys_names):
         # for leg in ["complex", 'solvent']:
         cplx = [f for f in complex_files if ligand.split(".")[0] in f][0]
@@ -46,7 +46,7 @@ conda activate mlmm
 which python
 
 
-srun -n {replicas} --gpu-bind=map_gpu:{gpu_bind_string} mace-md -f {os.path.join(direc, "ligands", ligand)} --ml_mol '{os.path.join(direc, "ligands", ligand)}' --run_type repex --replicas {replicas} --log_level 10  --model_path {model_path} --dtype float64 --neighbour_list torch_nl_n2 --output_dir {output_dir}/{sys_name}/solvent --resname {sys_name} --system_type hybrid --smff {smff} --equil gentle --restart
+mace-md -f {os.path.join(direc, "ligands", ligand)} --ml_mol '{os.path.join(direc, "ligands", ligand)}' --run_type repex --replicas {replicas} --log_level 10  --model_path {model_path} --dtype float64 --neighbour_list torch_nl_n2 --output_dir {output_dir}/{sys_name}/solvent --resname .pdb --system_type hybrid --smff {smff} --equil gentle {rst}
     """
         print(lig_batch_script)
         with open(f"mace_repex_{sys_name}_solvent.sh", 'w') as f:
@@ -68,7 +68,7 @@ conda activate mlmm
 which python
 
 
-mace-md -f {os.path.join(direc, "complex", cplx)} --ml_mol '{os.path.join(direc, "ligands", ligand)}' --run_type repex --replicas {replicas} --log_level 10 --model_path {model_path} --dtype float64 --neighbour_list torch_nl_n2 --output_dir {output_dir}/{sys_name}/complex --resname UNK --system_type hybrid  --smff {smff} --equil gentle --restart
+mace-md -f {os.path.join(direc, "complex", cplx)} --ml_mol '{os.path.join(direc, "ligands", ligand)}' --run_type repex --replicas {replicas} --log_level 10 --model_path {model_path} --dtype float64 --neighbour_list torch_nl_n2 --output_dir {output_dir}/{sys_name}/complex --resname UNK --system_type hybrid  --smff {smff} --equil gentle {rst}
     """
         print(cplx_batch_script)
 
@@ -83,12 +83,13 @@ def main():
     parser.add_argument("--model_path", type=str )
     parser.add_argument("--smff", type=str, default="1.0")
     parser.add_argument("--ngpu", type=int, default=1)
+    parser.add_argument("--restart", type=bool, default=False)
     parser.add_argument("--output_dir", help="directory to write batch scripts to", default=".", type=str)
 
     # parser.add_argument()
     args = parser.parse_args()
 
-    write_batch_scripts(args.input,  args.replicas, args.model_path, args.smff, args.output_dir, args.ngpu)
+    write_batch_scripts(args.input,  args.replicas, args.model_path, args.smff, args.output_dir, args.restart, args.ngpu)
 
 if __name__ == "__main__":
    main()
