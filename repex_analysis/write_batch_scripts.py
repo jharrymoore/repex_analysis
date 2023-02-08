@@ -37,7 +37,6 @@ def write_batch_scripts(direc: str, replicas: int, model_path: str, smff: str, o
 #SBATCH -p ampere
 #SBATCH --gres=gpu:{n_gpu}
 #SBATCH -A csanyi-SL2-GPU
-#SBATCH --ntasks {replicas}
 
 export HDF5_USE_FILE_LOCKING=FALSE
 source ~/.bashrc

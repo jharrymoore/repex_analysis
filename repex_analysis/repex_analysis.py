@@ -94,12 +94,12 @@ def plot_correction_timeseries(output_com, output_sol, temp, out_file, component
         n_iterations_com (int, optional): The number of iterations simulated for the complex leg. Defaults to 5000.
         n_iterations_sol (int, optional): The number of iterations simulated for the solvent leg. Defaults to 5000.
     """
+    
     cumulative_corrs = {}
     n_iterations = {"complex": n_iterations_com, "solvent": n_iterations_sol, "corr": max(n_iterations_com, n_iterations_sol)}
 
     # Get corrections for each value of max_n_iterations
     for i, max_n_iterations in enumerate(range(step_size, n_iterations["corr"] + step_size, step_size)):
-
         rep_com = MultiStateReporter(output_com)
         ana_com = MultiStateSamplerAnalyzer(
             rep_com, max_n_iterations=min(max_n_iterations, n_iterations["complex"]))
@@ -107,14 +107,13 @@ def plot_correction_timeseries(output_com, output_sol, temp, out_file, component
         ana_sol = MultiStateSamplerAnalyzer(
             rep_sol, max_n_iterations=min(max_n_iterations, n_iterations["solvent"]))
         corr_dict = get_correction(ana_com, ana_sol, temp)
-
+        
         # Initialise the dictionary
         if i == 0:
             for energy_type in corr_dict:
                 cumulative_corrs[energy_type] = {}
                 for k in corr_dict[energy_type]:
                     cumulative_corrs[energy_type][k] = []
-
         # Populate the dictionary
         for energy_type in corr_dict:
             for k in corr_dict[energy_type]:
@@ -502,7 +501,7 @@ def plot_rmsd(pdb_file, path_nc, analyser, out_file, resname="MOL", checkpoint_n
     # Get topology
     topology = app.PDBFile(pdb_file).topology
     # Get atoms
-    atoms = get_atoms_from_resname(topology, resname)
+    atoms = get_atoms_from_resname(topology, resname, nnpify_type="resname")
     # Count number of states
     states = analyser.n_states
     # Create figure
