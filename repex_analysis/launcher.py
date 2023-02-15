@@ -36,7 +36,16 @@ def main():
     args = parser.parse_args()
 
     if args.solvent:
-        batch_scripts = [f for f in os.listdir(args.launch_dir) if f.endswith("solvent.sh")]
+        # batch_scripts = [f for f in os.listdir(args.launch_dir) if f.endswith("solvent.sh")]
+        batch_scripts = []
+        for path, directories, files in os.walk(args.launch_dir):
+            for file in files:
+                if file.endswith("solvent.sh"):
+                    print(file)
+                    batch_scripts.append(os.path.join(path, file))
+
+        print(f"Executing batch scripts {batch_scripts}")
+                
         for script in batch_scripts:
             output = subprocess.run(f"sbatch {os.path.join(args.launch_dir, script)}", capture_output=True, shell=True, check=True)
             job_id = output.stdout.split()[-1].decode("utf8")
@@ -46,7 +55,14 @@ def main():
             wait_for_job_start(args.launch_dir, job_id)
 
     if args.complex:
-        batch_scripts = [f for f in os.listdir(args.launch_dir) if f.endswith("cplx.sh")]
+        batch_scripts = []
+        for path, directories, files in os.walk(args.launch_dir):
+            for file in files:
+                if file.endswith("cplx.sh"):
+                    print(file)
+                    batch_scripts.append(os.path.join(path, file))
+
+        print(f"Executing batch scripts {batch_scripts}")
         for script in batch_scripts:
             output = subprocess.run(f"sbatch {os.path.join(args.launch_dir, script)}", capture_output=True, shell=True, check=True)
             job_id = output.stdout.split()[-1].decode("utf8")

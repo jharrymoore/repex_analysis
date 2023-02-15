@@ -48,7 +48,7 @@ which python
 mace-md -f {os.path.join(direc, "ligands", ligand)} --ml_mol '{os.path.join(direc, "ligands", ligand)}' --run_type repex --replicas {replicas} --log_level 10  --model_path {model_path} --dtype float64 --neighbour_list torch_nl_n2 --output_dir {output_dir}/{sys_name}/solvent --resname .pdb --system_type hybrid --smff {smff} --equil gentle {rst}
     """
         print(lig_batch_script)
-        with open(f"mace_repex_{sys_name}_solvent.sh", 'w') as f:
+        with open(f"{output_dir}/{sys_name}/mace_repex_{sys_name}_solvent.sh", 'w') as f:
             f.write(lig_batch_script)
 
         # now the complex batch script
@@ -71,7 +71,7 @@ mace-md -f {os.path.join(direc, "complex", cplx)} --ml_mol '{os.path.join(direc,
     """
         print(cplx_batch_script)
 
-        with open(f"mace_repex_{sys_name}_cplx.sh", 'w') as f:
+        with open(f"{output_dir}/{sys_name}/mace_repex_{sys_name}_cplx.sh", 'w') as f:
             f.write(cplx_batch_script)
 def main():
     parser = argparse.ArgumentParser()
@@ -82,7 +82,7 @@ def main():
     parser.add_argument("--model_path", type=str )
     parser.add_argument("--smff", type=str, default="1.0")
     parser.add_argument("--ngpu", type=int, default=1)
-    parser.add_argument("--restart", type=bool, default=False)
+    parser.add_argument("--restart", action="store_true")
     parser.add_argument("--output_dir", help="directory to write batch scripts to", default=".", type=str)
 
     # parser.add_argument()
