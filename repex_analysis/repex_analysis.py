@@ -1,5 +1,5 @@
 from openmmtools.multistate import MultiStateSamplerAnalyzer, MultiStateReporter
-from openmmtools.openmm_torch.repex import get_atoms_from_resname
+from mace_md.nnp_repex.repex import get_atoms_from_resname
 from openmm import app
 import numpy as np
 import os
@@ -219,7 +219,7 @@ def write_stats(analyser, outfile):
 
 # Overlap
 
-def plot_overlap(lig, leg, analyser, out_file):
+def plot_overlap(lig, leg, analyser, out_file, annotate: bool = False):
     """Plot overlap matrix for ligand for given leg,
     and write out the off-diagonal overlap to a txt
     file.
@@ -232,11 +232,11 @@ def plot_overlap(lig, leg, analyser, out_file):
         to write.
     """
 
-    overlap_dict = analyser.mbar.computeOverlap()
+    overlap_dict = analyser.mbar.compute_overlap()
     #overlap = np.array(overlap_dict["matrix"])[::2,::2]
     overlap = np.array(overlap_dict["matrix"])
-    fig, ax = plt.subplots(1, 1, figsize=(6, 4))
-    sns.heatmap(overlap, ax=ax, square=True, linewidths=.5)
+    fig, ax = plt.subplots(1, 1, figsize=(10, 8))
+    sns.heatmap(overlap, ax=ax, square=True, linewidths=.5, annot=annotate)
     ax.set_title(f"{lig} {leg} overlap")
     fig.savefig(f"{out_file}.png", bbox_inches="tight")
 
